@@ -24,7 +24,7 @@ def save_comments(comments):
         json.dump(comments, f)
 
 
-# Home Page
+# Home
 @app.route("/")
 def home():
     return render_template_string('''
@@ -88,7 +88,7 @@ def home():
     ''')
 
 
-# Workouts Page
+# Workouts
 @app.route("/workouts")
 def workouts():
     return render_template_string('''
@@ -279,7 +279,7 @@ products = {
     7: {"name": "Travel Mirror", "price": "$139.99", "image": "mirror.png", "desc": "Because you should admire your gains anywhere."},
     8: {"name": "Influencer Starter Kit", "price": "$599.99", "image": "kit.png", "desc": "You won't look ridiculous carrying this around the gym. Trust us."}
 }
-
+# Shop
 @app.route("/shop")
 def shop():
     return render_template_string('''
@@ -402,7 +402,7 @@ def shop():
     </body>
     </html>
     ''', products=products)
-
+# Product detail pages
 @app.route("/product/<int:product_id>")
 def product_detail(product_id):
     product = products.get(product_id)
@@ -492,6 +492,7 @@ def product_detail(product_id):
     </html>
     ''', product=product, product_id=product_id)
 
+# Add to Cart Function
 @app.route("/add-to-cart/<int:product_id>")
 def add_to_cart(product_id):
     if product_id not in products:
@@ -501,12 +502,13 @@ def add_to_cart(product_id):
     session["cart"] = cart
     return redirect(url_for("cart"))
 
+# Cart Page
 @app.route("/cart")
 def cart():
     cart = session.get("cart", [])
     cart_items = [products[int(id)] for id in cart]
 
-    # Convert price strings like "$29.99" to floats and calculate total
+    # Convert price to floats and calculate total
     total = sum(float(item['price'].replace('$', '')) for item in cart_items)
 
     return render_template_string('''
@@ -633,7 +635,7 @@ def cart():
     </html>
     ''', cart_items=cart_items, total=total)
 
-
+# Surprise! (Stop wandering and do the lesson)
 @app.route("/end")
 def end():
     return render_template_string('''
@@ -693,7 +695,7 @@ def end():
     </html>
     ''')
 
-# Item Removal
+# Remove Item
 @app.route("/remove-from-cart/<int:product_id>", methods=["POST"])
 def remove_from_cart(product_id):
     cart = session.get("cart", [])
@@ -702,7 +704,7 @@ def remove_from_cart(product_id):
         session["cart"] = cart
     return redirect(url_for("cart"))
 
-# About Us Page
+# About Us
 @app.route("/about")
 def about():
     return render_template_string('''
@@ -785,7 +787,7 @@ def about():
     ''')
 
 
-# Progress Pics – Age Verification Required
+# Progress Pics
 @app.route("/progress-pics", methods=["GET", "POST"])
 def progress_pics():
     error = ""
@@ -794,23 +796,23 @@ def progress_pics():
     images = [img for img in os.listdir(app.config['UPLOAD_FOLDER']) if
               img.lower().endswith(('.jpg', '.jpeg', '.png', '.gif'))]
 
-    # Step 1: Age Verification
+    # Age Verification
     if 'age' in request.form:
         age = request.form.get("age", "")
-        if age:  # Insufficient validation: no digit check, no range check
+        if age:  
             verified = True
 
 
-    # Step 2: Posting a comment
+    # Comments
     elif 'comment' in request.form and 'image' in request.form:
         image_name = request.form.get("image")
         comment = request.form.get("comment", "").strip()
         if image_name in images and comment:
             comments.setdefault(image_name, []).append(comment)
             save_comments(comments)
-            verified = True  # allow user to stay in after commenting
+            verified = True  # Stays on page
 
-    # If verified, show the gallery
+    # Show the gallery
     if verified or request.method == "POST" and 'comment' in request.form:
         return render_template_string('''
         <!DOCTYPE html>
@@ -965,7 +967,7 @@ def progress_pics():
         </html>
         ''', images=images, comments=comments)
 
-    # Default: Show age verification
+    # Show age verification
     return render_template_string('''
     <!DOCTYPE html>
     <html>
@@ -1029,7 +1031,7 @@ def progress_pics():
     ''', error=error)
 
 
-# Launch in browser
+# Launch on start
 def open_browser():
     webbrowser.open_new("http://127.0.0.1:5000/")
 
