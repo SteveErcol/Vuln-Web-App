@@ -37,7 +37,7 @@ Educational Purpose
 
 - This application is designed for:
 	- Secure coding education
-- Web vulnerability walkthroughs
+	- Web vulnerability walkthroughs
 
 - Educators and learners can modify the app to:
 	- Inject vulnerabilities (e.g., reflected/stored XSS, IDOR, insecure redirects)
@@ -55,49 +55,38 @@ project/
 ├── static/
 │   ├── uploads/            # Progress pics shown in gallery
 │   └── shop/               # Product images for Shop and Cart section
-├── README.md               # You are here.
+├── README.txt              # You are here.
+├── requirements.txt        # Dependencies needed to run the app
+
 
 -------------------------------------------------------------------------------
 
 Setup & Usage
 
-1. Clone or Copy Project
-   git clone https://github.com/your-username/gym-for-muscles.git
-   cd gym-for-muscles
+1. Clone the Project
+   git clone https://github.com/your-username/Vuln-Web-App.git
+   cd Vuln-Web-App
 
 2. Install Dependencies
    pip install flask werkzeug
 
-3. Add Required Directories & Files
-   mkdir -p static/uploads static/shop
-   Place your product images in static/shop/ (e.g., brotein.png, juice.png, etc.)
-   Place any test gallery images in static/uploads/
-   Create an empty comments.json if missing:
-   {}
+3. (Optional) Verify Static Folders
+   All required images and folders (static/uploads and static/shop) are already included in the repository.
+   If not, create them as needed:
+     mkdir -p static/uploads static/shop
+     mkdir -p static/uploads static/uploads
 
-4. Run the App
+4. (Optional) Create an Empty comments.json if Missing
+   If you accidentally delete or corrupt it, add a valid empty file:
+     {}
+
+5. Run the App
    python vulnerable-workouts.py
-   Your browser will open automatically to http://127.0.0.1:5000
+   
 
--------------------------------------------------------------------------------
+   If it does not open automatically, open:
+   http://127.0.0.1:5000
 
-Vulnerability Integration (For Instructors)
-
-- You can adapt the project to teach:
-	- XSS Attacks (via comments form on Progress Pics)
-	- Insufficient Input Validation (already included)
-	- Session-based state attacks
-	- Unvalidated redirects or IDOR (if extended)
-
-
--------------------------------------------------------------------------------
-
-Customization Tips
-
-- Modify product catalog in products = { ... }
-- Replace background GIF with another animated source
-- Add form validation or Flask-WTF integration
-- Add a database to replace JSON storage (e.g., SQLite)
 
 -------------------------------------------------------------------------------
 
