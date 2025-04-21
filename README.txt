@@ -64,7 +64,7 @@ project/
 Setup & Usage
 
 1. Clone the Project
-   git clone https://github.com/your-username/Vuln-Web-App.git
+   git clone https://github.com/SteveErcol/Vuln-Web-App.git
    cd Vuln-Web-App
 
 2. Install Dependencies
