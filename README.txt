@@ -49,13 +49,14 @@ Educational Purpose
 Project Structure
 
 project/
-├── Workouts.py             # Main Flask application - Patched for Insufficient Input Validation
-├── Vulnerable-Workouts.py  # Main Flask application - Unpatched for Insufficient Input Validation
-├── comments.json           # Stores Progress Pic comments
 ├── static/
 │   ├── uploads/            # Progress pics shown in gallery
 │   └── shop/               # Product images for Shop and Cart section
+├── LICENSE.txt        	    # MIT License Details
 ├── README.txt              # You are here.
+├── Vulnerable-Workouts.py  # Main Flask application - Unpatched for Insufficient Input Validation
+├── Workouts.py             # Main Flask application - Patched for Insufficient Input Validation
+├── comments.json           # Stores Progress Pic comments
 ├── requirements.txt        # Dependencies needed to run the app
 
 
@@ -69,6 +70,8 @@ Setup & Usage
 
 2. Install Dependencies
    pip install flask werkzeug
+		or
+   pip install -r requirements.txt
 
 3. (Optional) Verify Static Folders
    All required images and folders (static/uploads and static/shop) are already included in the repository.
@@ -81,7 +84,7 @@ Setup & Usage
      {}
 
 5. Run the App
-   python vulnerable-workouts.py
+   python3 Vulnerable-Workouts.py
    
 
    If it does not open automatically, open:
@@ -98,7 +101,7 @@ This project is licensed under the MIT License and for educational purposes only
 
 Final Thoughts
 
-I really hope you enjoy exploring Esteban's Gym! Let me know your thoughts.
+I really hope you enjoy exploring Esteban's Gym for Muscles! Let me know your thoughts.
 
 Now go forth, code secure apps, and never skip leg day. 💪
 
