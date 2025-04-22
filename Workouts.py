@@ -545,4 +545,4 @@ def open_browser():
 if __name__ == "__main__":
     if not is_running_from_reloader():
         threading.Timer(1.25, open_browser).start()
-    app.run(debug=True)
+    app.run(debug=False)
