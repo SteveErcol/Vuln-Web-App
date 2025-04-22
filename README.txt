@@ -1,7 +1,7 @@
 
 Esteban's Gym For Muscles – Educational Web App
 
-Esteban's Gym for Muscles is a fitness-themed Flask web application designed to teach developers and learners how to identify, exploit, and patch common web application vulnerabilities.
+Esteban's Gym for Muscles is a fitness-themed Flask web application designed to teach developers and learners how to identify, exploit, and patch common web application vulnerabilities, in this case Insufficient Input Validation.
 
 This app contains both vulnerable and secure versions, making it perfect for secure coding workshops or classroom demos.
 
