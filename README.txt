@@ -92,7 +92,7 @@ Setup & Usage
 
 License
 
-This project is for educational purposes only. Feel free to remix, modify, or fork it for your own lessons!
+This project is licensed under the MIT License and for educational purposes only. Please see the LICENSE.txt file.
 
 -------------------------------------------------------------------------------
 
