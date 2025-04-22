@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, render_template_string, url_for
+from flask import Flask, request, redirect, render_template_string, url_for, session
 import webbrowser
 import threading
 from werkzeug.serving import is_running_from_reloader
@@ -6,6 +6,7 @@ import json
 import os
 
 app = Flask(__name__)
+app.secret_key = 'key'
 
 COMMENTS_FILE = 'comments.json'
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
@@ -40,12 +41,14 @@ def home():
                 background: url('https://lh5.googleusercontent.com/vWSLmMtz8k_Jh7mWE-G3IgiKZjJ8YFp8FTen2K9HhESMbLvwURmNIDed7HI7t-ZLg_QljnPedplWOzYtLAB7qJKlNeLHzMI2v04YBLwih-rf_50SpAnchUhqX1YG7HjeEx9UGi6f-_GqefQDsQjYGDcBXaT0WXJJ') no-repeat center center fixed;
                 background-size: cover;
                 overflow: hidden;
+                padding: 50px;
             }
             nav {
-                background-color: #232526;
+                background-color: rgba(0, 0, 0, 0.6);
                 padding: 10px;
                 display: flex;
                 justify-content: center;
+                margin-bottom: 30px;
             }
             nav a {
                 color: white;
@@ -56,6 +59,11 @@ def home():
             nav a:hover {
                 text-decoration: underline;
             }
+            h1 {
+                font-size: 3rem;
+                text-shadow: 2px 2px 4px rgba(0,0,0,0.4);
+                text-transform: uppercase;
+            }
             .container {
                 padding: 40px;
                 text-align: center;
@@ -64,10 +72,14 @@ def home():
     </head>
     <body>
         <nav>
-            <a href="{{ url_for('workouts') }}">Workouts</a>
-            <a href="{{ url_for('progress_pics') }}">Progress Pics</a>
-            <a href="{{ url_for('shop') }}">Shop</a>
-            <a href="{{ url_for('about') }}">About Us</a>
+             <a href="{{ url_for('home') }}">Home</a>
+                <a href="{{ url_for('workouts') }}">Workouts</a>
+                <a href="{{ url_for('progress_pics') }}">Progress Pics</a>
+                <a href="{{ url_for('shop') }}">Shop</a>
+                <a href="{{ url_for('about') }}">About Us</a>
+                <a href="{{ url_for('cart') }}" title="View Cart">
+                    🛒 ({{ session.get('cart')|length if session.get('cart') else 0 }})
+                </a>
         </nav>
         <div class="container">
             <h1><i>Welcome to Esteban's Gym For Muscles!</i></h1>
@@ -116,6 +128,7 @@ def workouts():
             h1 {
                 font-size: 3em;
                 margin-bottom: 10px;
+                text-shadow: 2px 2px 4px rgba(0,0,0,0.4);
             }
             p {
                 font-size: 1.2em;
@@ -162,10 +175,14 @@ def workouts():
     </head>
     <body>
         <nav>
-            <a href="{{ url_for('workouts') }}">Workouts</a>
-            <a href="{{ url_for('progress_pics') }}">Progress Pics</a>
-            <a href="{{ url_for('shop') }}">Shop</a>
-            <a href="{{ url_for('about') }}">About Us</a>
+             <a href="{{ url_for('home') }}">Home</a>
+                <a href="{{ url_for('workouts') }}">Workouts</a>
+                <a href="{{ url_for('progress_pics') }}">Progress Pics</a>
+                <a href="{{ url_for('shop') }}">Shop</a>
+                <a href="{{ url_for('about') }}">About Us</a>
+                <a href="{{ url_for('cart') }}" title="View Cart">
+                    🛒 ({{ session.get('cart')|length if session.get('cart') else 0 }})
+                </a>
         </nav>
 
         <h1>Workouts for Muscles</h1>
@@ -254,6 +271,18 @@ def workouts():
     ''')
 
 
+# Product catalog
+products = {
+    1: {"name": "Brotein 5000", "price": "$29.99", "image": "brotein.png", "desc": "You can never have enough protein."},
+    2: {"name": "Da Juice", "price": "$24.99", "image": "juice.png", "desc": "Functional heart? Who needs it. We just want gains."},
+    3: {"name": "Chalk", "price": "$49.99", "image": "chalk.png", "desc": "Bathe in it if it'll get you muscles."},
+    4: {"name": "Tae Bo: Volume 47", "price": "$29.99", "image": "tae.png", "desc": "Billy Blanks hasn't aged a day and will still kick your butt."},
+    5: {"name": "Welcome to Biami", "price": "$79.99", "image": "biami.png", "desc": "For a limited time only."},
+    6: {"name": "Golden Dumbells", "price": "$499.99", "image": "db.png", "desc": "These are the only things that will outshine your guns."},
+    7: {"name": "Travel Mirror", "price": "$139.99", "image": "mirror.png", "desc": "Because you should admire your gains anywhere."},
+    8: {"name": "Influencer Starter Kit", "price": "$599.99", "image": "kit.png", "desc": "You won't look ridiculous carrying this around the gym. Trust us."}
+}
+
 # Shop Page
 @app.route("/shop")
 def shop():
@@ -261,12 +290,374 @@ def shop():
     <!DOCTYPE html>
     <html>
     <head>
-        <title>Gear for Muscles</title>
+        <title>Gear For Muscles</title>
+        <style>
+            body { font-family: Arial; 
+            margin: 0; 
+            background: #f5f5f5; 
+            padding: 50px; 
+            }
+            nav { 
+            background: rgba(0,0,0,0.6); 
+            padding: 10px; 
+            display: flex; 
+            justify-content: center; 
+            margin-bottom: 30px; 
+            }
+            nav a { 
+            color: white; 
+            text-decoration: none; 
+            margin: 0 15px; 
+            font-weight: bold; 
+            }
+            nav a:hover { 
+            text-decoration: underline; 
+            }
+            .container { 
+            max-width: 1200px; 
+            margin: 40px auto; 
+            padding: 0 20px; 
+            }
+            h1 { 
+            font-size: 3rem; 
+            text-align: center; 
+            margin-bottom: 20px; 
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.4);
+            }
+            p { 
+            text-align: center; 
+            margin-bottom: 40px; 
+            }
+            .grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
+            gap: 30px; 
+            }
+            .product-card { 
+            background: white; 
+            border-radius: 10px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
+            overflow: hidden; text-align: center; 
+            transition: transform 0.3s ease; 
+            }
+            .product-card:hover { 
+            transform: translateY(-5px);
+            }
+            .product-card img { 
+            width: 100%; 
+            height: 200px; 
+            object-fit: cover; 
+            }
+            .product-details { 
+            padding: 15px; 
+            }
+            .product-details h3 { 
+            margin: 0; 
+            font-size: 1.2rem; 
+            }
+            .price { 
+            margin: 10px 0; 
+            color: #007BFF; 
+            font-weight: bold; 
+            }
+            .btn { 
+            padding: 6px 12px;
+            font-size: 0.9rem; 
+            background-color: #007BFF; 
+            color: white; border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            transition: background 0.3s ease; 
+            margin: 5px; 
+            }
+            .btn:hover { 
+            background-color: #0056b3; 
+            }
+        </style>
+    </head>
+    <body>
+        <nav>
+             <a href="{{ url_for('home') }}">Home</a>
+                <a href="{{ url_for('workouts') }}">Workouts</a>
+                <a href="{{ url_for('progress_pics') }}">Progress Pics</a>
+                <a href="{{ url_for('shop') }}">Shop</a>
+                <a href="{{ url_for('about') }}">About Us</a>
+                <a href="{{ url_for('cart') }}" title="View Cart">
+                    🛒 ({{ session.get('cart')|length if session.get('cart') else 0 }})
+                </a>
+        </nav>
+
+        <div class="container">
+            <h1>Gear for Muscles</h1>
+            <p>For when pure grit isn't enough.</p>
+            <div class="grid">
+                {% for id, product in products.items() %}
+                <div class="product-card">
+                    <img src="{{ url_for('static', filename='shop/' + product.image) }}" alt="{{ product.name }}">
+                    <div class="product-details">
+                        <h3>{{ product.name }}</h3>
+                        <div class="price">{{ product.price }}</div>
+                        <a href="{{ url_for('product_detail', product_id=id) }}" class="btn">View Details</a>
+                        <a href="{{ url_for('add_to_cart', product_id=id) }}" class="btn">Add to Cart</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </body>
+    </html>
+    ''', products=products)
+
+# Product Detail Page
+@app.route("/product/<int:product_id>")
+def product_detail(product_id):
+    product = products.get(product_id)
+    if not product:
+        return "Product not found.", 404
+    return render_template_string('''
+     <!DOCTYPE html>
+    <html>
+    <head>
+        <title>{{ product.name }}</title>
+        <style>
+            body { 
+            font-family: Arial, sans-serif; 
+            text-align: center;
+            background-color: #f5f5f5; 
+            padding: 50px; margin: 0; 
+            }
+            nav { background-color: rgba(0,0,0,0.6); 
+            padding: 10px; display: flex; 
+            justify-content: center; 
+            margin-bottom: 30px; 
+            }
+            nav a { 
+            color: white; 
+            text-decoration: none; 
+            margin: 0 15px; 
+            font-weight: bold; 
+            }
+            nav a:hover { 
+            text-decoration: underline; 
+            }
+            .container { 
+            max-width: 800px; 
+            margin: auto; 
+            background: white; 
+            padding: 30px; 
+            border-radius: 10px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
+            }
+            img { 
+            width: 100%; 
+            max-height: 400px; 
+            object-fit: contain; 
+            margin-bottom: 20px; 
+            }
+            h1 { 
+            margin-bottom: 10px; 
+            }
+            .price { 
+            font-size: 1.2rem; 
+            color: #007BFF; 
+            font-weight: bold; 
+            margin-bottom: 20px; 
+            }
+            .btn { 
+            padding: 10px 20px; 
+            background-color: #007BFF; 
+            color: white; border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            text-decoration: none; 
+            display: inline-block; 
+            }
+            .btn:hover { 
+            background-color: #0056b3; 
+            }
+        </style>
+    </head>
+    <body>
+        <nav>
+            <a href="{{ url_for('home') }}">Home</a>
+            <a href="{{ url_for('workouts') }}">Workouts</a>
+            <a href="{{ url_for('progress_pics') }}">Progress Pics</a>
+            <a href="{{ url_for('shop') }}">Shop</a>
+            <a href="{{ url_for('about') }}">About Us</a>
+        </nav>
+
+        <div class="container">
+            <h1>{{ product.name }}</h1>
+            <img src="{{ url_for('static', filename='shop/' + product.image) }}" alt="{{ product.name }}">
+            <p>{{ product.desc }}</p>
+            <div class="price">{{ product.price }}</div>
+            <a href="{{ url_for('add_to_cart', product_id=product_id) }}" class="btn">Add to Cart</a>
+            <a href="{{ url_for('shop') }}" class="btn" style="background-color: gray;">Back to Shop</a>
+        </div>
+    </body>
+    </html>
+    ''', product=product, product_id=product_id)
+
+# Add to Cart Function
+@app.route("/add-to-cart/<int:product_id>")
+def add_to_cart(product_id):
+    if product_id not in products:
+        return "Product not found.", 404
+    cart = session.get("cart", [])
+    cart.append(product_id)
+    session["cart"] = cart
+    return redirect(url_for("cart"))
+
+# Cart Page
+@app.route("/cart")
+def cart():
+    cart = session.get("cart", [])
+    cart_items = [products[int(id)] for id in cart]
+
+    # Convert price strings like "$29.99" to floats and calculate total
+    total = sum(float(item['price'].replace('$', '')) for item in cart_items)
+
+    return render_template_string('''
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Your Cart</title>
+        <style>
+            body { 
+            font-family: Arial, sans-serif; 
+            background-color: #f5f5f5; 
+            margin: 0; 
+            padding: 50px; 
+            }
+            nav { 
+            background-color: rgba(0,0,0,0.6); 
+            padding: 10px; 
+            display: flex; 
+            justify-content: center; 
+            margin-bottom: 30px; 
+            }
+            nav a { 
+            color: white; 
+            text-decoration: none; 
+            margin: 0 15px; 
+            font-weight: bold; 
+            }
+            nav a:hover { 
+            text-decoration: underline; 
+            }
+            .container { 
+            max-width: 800px; 
+            margin: auto; 
+            background: white; 
+            padding: 30px; 
+            border-radius: 10px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
+            }
+            h1 { 
+            margin-bottom: 20px; 
+            }
+            ul { 
+            list-style: none; 
+            padding: 0; 
+            }
+            li { 
+            padding: 10px 0; 
+            border-bottom: 1px solid #ccc; 
+            font-size: 1.1rem; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            }
+            .cart-item { 
+            display: flex; 
+            justify-content: space-between; 
+            width: 100%; 
+            align-items: center; 
+            }
+            form { 
+            display: inline; 
+            }
+            .btn { 
+            padding: 8px 14px; 
+            background-color: #007BFF; 
+            color: white; 
+            border: none; 
+            border-radius: 5px; 
+            text-decoration: none; 
+            font-size: 0.95rem; 
+            cursor: pointer; 
+            }
+            .btn:hover { 
+            background-color: #0056b3; 
+            }
+            .btn-remove { 
+            background-color: red; 
+            }
+            .btn-remove:hover { 
+            background-color: darkred; 
+            }
+            .total { 
+            text-align: right; 
+            font-size: 1.2rem; 
+            font-weight: bold; 
+            margin-top: 20px; 
+            }
+        </style>
+    </head>
+    <body>
+        <nav>
+            <a href="{{ url_for('home') }}">Home</a>
+            <a href="{{ url_for('workouts') }}">Workouts</a>
+            <a href="{{ url_for('progress_pics') }}">Progress Pics</a>
+            <a href="{{ url_for('shop') }}">Shop</a>
+            <a href="{{ url_for('about') }}">About Us</a>
+            <a href="{{ url_for('cart') }}" title="View Cart">
+                🛒 ({{ session.get('cart')|length if session.get('cart') else 0 }})
+            </a>
+        </nav>
+
+        <div class="container">
+            <h1>Your Cart</h1>
+            <ul>
+                {% for item in cart_items %}
+                <li>
+                    <span class="cart-item">
+                        {{ item.name }} - {{ item.price }}
+                        <form method="POST" action="{{ url_for('remove_from_cart', product_id=loop.index0 + 1) }}">
+                            <button type="submit" class="btn btn-remove">X</button>
+                        </form>
+                    </span>
+                </li>
+                {% endfor %}
+            </ul>
+
+            <div class="total">Total: ${{ "%.2f"|format(total) }}</div>
+
+            <br>
+            <a href="{{ url_for('end') }}" class="btn">Checkout</a>
+            <a href="{{ url_for('shop') }}" class="btn">Back to Shop</a>
+        </div>
+    </body>
+    </html>
+    ''', cart_items=cart_items, total=total)
+
+
+@app.route("/end")
+def end():
+    return render_template_string('''
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>The End</title>
         <style>
             body {
-                font-family: Arial, sans-serif;
                 margin: 0;
-                background-color: #f5f5f5;
+                padding: 0;
+                font-family: Arial, sans-serif;
+                background: linear-gradient(to right, #232526, #414345);
+                color: white;
+                text-align: center;
+                padding: 50px;
             }
             nav {
                 background-color: rgba(0, 0, 0, 0.6);
@@ -292,19 +683,32 @@ def shop():
     </head>
     <body>
         <nav>
+            <a href="{{ url_for('home') }}">Home</a>
             <a href="{{ url_for('workouts') }}">Workouts</a>
             <a href="{{ url_for('progress_pics') }}">Progress Pics</a>
             <a href="{{ url_for('shop') }}">Shop</a>
             <a href="{{ url_for('about') }}">About Us</a>
+            <a href="{{ url_for('cart') }}" title="View Cart">
+                 🛒 ({{ session.get('cart')|length if session.get('cart') else 0 }})
+            </a>
         </nav>
         <div class="container">
-            <h1>Gear for Muscles</h1>
-            <p>Spend Money. Get Big Muscles.</p>
+            <h1>None of this is real.</h1>
+            <p>This is all an illusion. There is no cart. There never was. Go back to where the actual lesson is.</p>
+            <img src="{{ url_for('static', filename='shop/magic.gif') }}" alt="Magic" style="max-width: 100%; height: auto; display: block; margin: 0 auto;">
         </div>
     </body>
     </html>
     ''')
 
+# Item Removal
+@app.route("/remove-from-cart/<int:product_id>", methods=["POST"])
+def remove_from_cart(product_id):
+    cart = session.get("cart", [])
+    if product_id in cart:
+        cart.remove(product_id)
+        session["cart"] = cart
+    return redirect(url_for("cart"))
 
 # About Us Page
 @app.route("/about")
@@ -316,9 +720,13 @@ def about():
         <title>About Us and Our Muscles</title>
         <style>
             body {
-                font-family: Arial, sans-serif;
                 margin: 0;
-                background-color: #f5f5f5;
+                padding: 0;
+                font-family: Arial, sans-serif;
+                background: linear-gradient(to right, #232526, #414345);
+                color: white;
+                text-align: center;
+                padding: 50px;
             }
             nav {
                 background-color: rgba(0, 0, 0, 0.6);
@@ -344,10 +752,14 @@ def about():
     </head>
     <body>
         <nav>
+            <a href="{{ url_for('home') }}">Home</a>
             <a href="{{ url_for('workouts') }}">Workouts</a>
             <a href="{{ url_for('progress_pics') }}">Progress Pics</a>
             <a href="{{ url_for('shop') }}">Shop</a>
             <a href="{{ url_for('about') }}">About Us</a>
+            <a href="{{ url_for('cart') }}" title="View Cart">
+                 🛒 ({{ session.get('cart')|length if session.get('cart') else 0 }})
+            </a>
         </nav>
         <div class="container">
             <h1>🏋️‍♂️ About Us – Esteban’s Gym for Muscles 💥</h1>
@@ -381,7 +793,7 @@ def about():
     ''')
 
 
-# Progress Pics – Age Verification Required
+# Progress Pics
 @app.route("/progress-pics", methods=["GET", "POST"])
 def progress_pics():
     error = ""
@@ -390,7 +802,7 @@ def progress_pics():
     images = [img for img in os.listdir(app.config['UPLOAD_FOLDER']) if
               img.lower().endswith(('.jpg', '.jpeg', '.png', '.gif'))]
 
-    # Step 1: Age Verification
+    # Verification
     if 'age' in request.form:
         age = request.form.get("age", "").strip()
         if not age.isdigit():
@@ -400,7 +812,7 @@ def progress_pics():
         else:
             verified = True
 
-    # Step 2: Posting a comment
+    # Comments
     elif 'comment' in request.form and 'image' in request.form:
         image_name = request.form.get("image")
         comment = request.form.get("comment", "").strip()
@@ -409,71 +821,163 @@ def progress_pics():
             save_comments(comments)
             verified = True  # allow user to stay in after commenting
 
-    # If verified, show the gallery
+    # Show Gallery
     if verified or request.method == "POST" and 'comment' in request.form:
         return render_template_string('''
         <!DOCTYPE html>
         <html>
         <head>
-            <title>Progress Pics</title>
+            <title>Look at Our Muscles</title>
             <style>
-                body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 30px; }
-                .gallery { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
-                .photo-card {
-                    background: white;
-                    border-radius: 10px;
-                    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-                    padding: 15px;
-                    width: 300px;
+                body {
+                margin: 0;
+                padding: 0;
+                font-family: Arial, sans-serif;
+                background: linear-gradient(to right, #232526, #414345);
+                color: white;
+                text-align: center;
+                padding: 50px;
+                }
+                nav {
+                background-color: rgba(0, 0, 0, 0.6);
+                padding: 10px;
+                display: flex;
+                justify-content: center;
+                margin-bottom: 30px;
+                }
+                nav a {
+                    color: white;
+                    text-decoration: none;
+                    margin: 0 20px;
+                    font-weight: bold;
+                    font-size: 1rem;
+                }
+                nav a:hover {
+                    text-decoration: underline;
+                }
+                header {
+                    background-color: transparent;
+                    padding: 40px 20px;
                     text-align: center;
                 }
-                img { width: 100%; border-radius: 10px; }
-                form { margin-top: 10px; }
-                input[type="text"] {
+                header h1 {
+                    margin: 0;
+                    font-size: 3rem;
+                    text-shadow: 2px 2px 4px rgba(0,0,0,0.4);
+                }
+                header p {
+                    color: #ccc;
+                    margin-top: 10px;
+                }
+                .container {
+                    max-width: 1200px;
+                    margin: 40px auto;
+                    padding: 0 20px;
+                }
+                .gallery {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                    gap: 30px;
+                }
+                .photo-card {
+                    background: white;
+                    border-radius: 12px;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                    overflow: hidden;
+                    display: flex;
+                    flex-direction: column;
+                    transition: transform 0.3s ease;
+                }
+                .photo-card:hover {
+                    transform: translateY(-5px);
+                }
+                .photo-card img {
                     width: 100%;
-                    padding: 8px;
-                    margin-top: 5px;
+                    height: auto;
+                    display: block;
+                }
+                .card-body {
+                    padding: 20px;
+                    flex: 1;
+                }
+                form {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 10px;
+                }
+                input[type="text"] {
+                    padding: 10px;
                     border: 1px solid #ccc;
                     border-radius: 5px;
                 }
                 button {
-                    margin-top: 5px;
-                    padding: 8px 12px;
-                    background-color: #007BFF;
+                    padding: 10px;
+                    background-color: rgba(0, 0, 0, 0.6);
                     color: white;
                     border: none;
                     border-radius: 5px;
                     cursor: pointer;
+                    transition: background 0.3s ease;
                 }
-                .comments { text-align: left; margin-top: 10px; }
-                .comments p { background: #eee; padding: 5px; border-radius: 4px; margin: 3px 0; }
+                button:hover {
+                    background-color: #0056b3;
+                }
+                .comments {
+                    margin-top: 15px;
+                }
+                .comments p {
+                    background-color: transparent;
+                    padding: 8px;
+                    border-radius: 5px;
+                    margin: 5px 0;
+                    font-size: 0.95rem;
+                    color: #000000;
+                }
             </style>
         </head>
         <body>
-            <h1>Progress Pics</h1>
-            <p>Leave your thoughts on our progress!</p>
-            <div class="gallery">
-                {% for img in images %}
-                <div class="photo-card">
-                    <img src="{{ url_for('static', filename='uploads/' + img) }}" alt="Progress Pic">
-                    <form method="POST">
-                        <input type="hidden" name="image" value="{{ img }}">
-                        <input type="text" name="comment" placeholder="Leave a comment..." required>
-                        <button type="submit">Post</button>
-                    </form>
-                    <div class="comments">
-                        {% for comment in comments.get(img, []) %}
-                            <p>{{ comment }}</p>
-                        {% endfor %}
+            <nav>
+                <a href="{{ url_for('home') }}">Home</a>
+                <a href="{{ url_for('workouts') }}">Workouts</a>
+                <a href="{{ url_for('progress_pics') }}">Progress Pics</a>
+                <a href="{{ url_for('shop') }}">Shop</a>
+                <a href="{{ url_for('about') }}">About Us</a>
+                <a href="{{ url_for('cart') }}" title="View Cart">
+                    🛒 ({{ session.get('cart')|length if session.get('cart') else 0 }})
+                </a>
+            </nav>
+
+            <header>
+                <h1>Look at Our Muscles</h1>
+                <p>Muscles for One. Muscles for All.</p>
+            </header>
+
+            <div class="container">
+                <div class="gallery">
+                    {% for img in images %}
+                    <div class="photo-card">
+                        <img src="{{ url_for('static', filename='uploads/' + img) }}" alt="Progress Pic">
+                        <div class="card-body">
+                            <form method="POST">
+                                <input type="hidden" name="image" value="{{ img }}">
+                                <input type="text" name="comment" placeholder="Leave a comment..." required>
+                                <button type="submit">Post</button>
+                            </form>
+                            <div class="comments">
+                                {% for comment in comments.get(img, []) %}
+                                    <p>{{ comment }}</p>
+                                {% endfor %}
+                            </div>
+                        </div>
                     </div>
+                    {% endfor %}
                 </div>
-                {% endfor %}
             </div>
         </body>
         </html>
         ''', images=images, comments=comments)
 
-    # Default: Show age verification
+    # Age Verification Page
     return render_template_string('''
     <!DOCTYPE html>
     <html>
@@ -524,8 +1028,8 @@ def progress_pics():
     </head>
     <body>
         <div class="card">
-            <h2>Age Verification</h2>
-            <p>Please enter your age to view progress pics:</p>
+            <h2>For Legal Purposes</h2>
+            <p>Please enter your age</p>
             <form method="POST">
                 <input type="text" name="age" placeholder="e.g., 25">
                 <button type="submit">Enter</button>
@@ -537,7 +1041,7 @@ def progress_pics():
     ''', error=error)
 
 
-# Launch in browser
+# Browser open on launch
 def open_browser():
     webbrowser.open_new("http://127.0.0.1:5000/")
 
@@ -545,4 +1049,6 @@ def open_browser():
 if __name__ == "__main__":
     if not is_running_from_reloader():
         threading.Timer(1.25, open_browser).start()
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
     app.run(debug=False)
+
